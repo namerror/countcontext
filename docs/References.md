@@ -13,3 +13,47 @@
 [3]: https://developers.openai.com/api/docs/models/gpt-5.2?utm_source=chatgpt.com "GPT-5.2 Model | OpenAI API"
 [4]: https://developers.openai.com/api/docs/models/gpt-5-mini?utm_source=chatgpt.com "GPT-5 mini Model | OpenAI API"
 [5]: https://developers.openai.com/api/docs/models/o3?utm_source=chatgpt.com "o3 Model | OpenAI API"
+
+The most defensible way to read this is:
+
+- Current default ChatGPT web models: GPT-5.3 Instant and GPT-5.4 Thinking.
+- Legacy-but-still-visible for some users: GPT-5.2 Instant / Thinking, and sometimes older or specialty models via legacy access or workspace configuration.
+- Exact ChatGPT web context caps are only clearly documented in a few places. The clearest official numbers I found are 32K for Instant and 196K for Thinking/Pro on the Business models-and-limits page. For o3 and GPT-5 mini, OpenAI publishes the model context windows, but not a separate ChatGPT web cap for general consumer use.
+
+So the closest estimate for the best number to use in ChatGPT web is:
+| Model            |                                                                             Best number to use in ChatGPT web |
+| ---------------- | ------------------------------------------------------------------------------------------------------------: |
+| GPT-5.3 Instant  | **32K** documented in ChatGPT Business; consumer exact cap not separately published ([OpenAI Help Center][1]) |
+| GPT-5.4 Thinking |                                             **196K** documented in ChatGPT Business ([OpenAI Help Center][1]) |
+| GPT-5.2 Instant  |        **32K** if treated like Instant in ChatGPT; **400K** underlying model window ([OpenAI Help Center][1]) |
+| GPT-5.2 Thinking |      **196K** if treated like Thinking in ChatGPT; **400K** underlying model window ([OpenAI Help Center][1]) |
+| GPT-5 mini       |                **400K** underlying model window; ChatGPT cap not publicly documented ([OpenAI Developers][2]) |
+| o3               |                **200K** underlying model window; ChatGPT cap not publicly documented ([OpenAI Developers][3]) |
+
+[1]: https://help.openai.com/en/articles/12003714-chatgpt-business-models-limits?utm_source=chatgpt.com "ChatGPT Business - Models & Limits"
+[2]: https://developers.openai.com/api/docs/models/gpt-5-mini?utm_source=chatgpt.com "GPT-5 mini Model | OpenAI API"
+[3]: https://developers.openai.com/api/docs/models/o3?utm_source=chatgpt.com "o3 Model | OpenAI API"
+
+## Changes by Plan [(ref)](https://chatgpt.com/pricing/)
+### Instant (GPT-5.3 Instant)
+| Plan             | Max tokens |
+| ---------------- | ---------- |
+| Free             | **16K**    |
+| Go / Plus        | **32K**    |
+| Pro / Enterprise | **128K**   |
+### Thinking (GPT-5.4 Thinking)
+| Plan             | Context behavior                 |
+| ---------------- | -------------------------------- |
+| Free             | No full GPT-5.4 (uses mini/nano) |
+| Plus             | ~196K but limited usage          |
+| Pro / Enterprise | ~196K full access                |
+
+### Notes
+The effective usable context after overhead like system prompt, tooling, memory etc. could be estimated as follows (these numbers are used by our extension by default, but can be adjusted by users):
+| Model            | Usable input (real-world) |
+| ---------------- | ------------------------- |
+| GPT-5.3 Free     | ~12K–14K                  |
+| GPT-5.3 Plus     | ~25K–30K                  |
+| GPT-5.3 Pro      | ~100K–115K                |
+| GPT-5.4 Thinking | ~120K–170K                |
+
