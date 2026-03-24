@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Learn How It Works</title>
+    <link rel="stylesheet" href="learn.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <p class="eyebrow">ChatGPT Context Counter</p>
+        <h1>How We Estimate Context Usage</h1>
+        <p class="lede">
+          This extension estimates how much of your ChatGPT context window is being used by the
+          current conversation. The numbers are heuristic by default and can be customized in the
+          panel.
+        </p>
+      </header>
+
+      <section class="card">
+        <h2>How We Estimate Tokens</h2>
+        <ul>
+          <li>We parse visible conversation text and normalize whitespace.</li>
+          <li>Tokens are estimated from character counts (about 4 chars per token by default).</li>
+          <li>GPT-4 style models use a slightly tighter estimate (~3.8 chars per token).</li>
+          <li>GPT-3 style models use ~4 chars per token.</li>
+          <li>Attachments add a fixed estimate per detected attachment.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>Default Context Assumptions</h2>
+        <p class="muted">
+          These are the default caps used by the extension before any overrides. Some models use
+          plan-based caps; others have a single context window that applies to all plans.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>All plans</th>
+                <th>Free</th>
+                <th>Go</th>
+                <th>Plus</th>
+                <th>Pro</th>
+                <th>Business</th>
+                <th>Enterprise</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>GPT-5.3 Instant</td>
+                <td>—</td>
+                <td>16,000</td>
+                <td>32,000</td>
+                <td>32,000</td>
+                <td>128,000</td>
+                <td>32,000</td>
+                <td>128,000</td>
+              </tr>
+              <tr>
+                <td>GPT-5.4 Thinking</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>196,000</td>
+                <td>196,000</td>
+                <td>196,000</td>
+                <td>196,000</td>
+              </tr>
+              <tr>
+                <td>GPT-5.4 Pro</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>196,000</td>
+                <td>196,000</td>
+                <td>196,000</td>
+                <td>196,000</td>
+              </tr>
+              <tr>
+                <td>GPT-5.2 Instant (Legacy)</td>
+                <td>400,000</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>GPT-5.2 Thinking (Legacy)</td>
+                <td>400,000</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>GPT-5 mini</td>
+                <td>400,000</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>o3</td>
+                <td>200,000</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Overhead Assumptions</h2>
+        <ul>
+          <li>Base system/format overhead: 500 tokens.</li>
+          <li>Attachments: 200 tokens per detected attachment.</li>
+          <li>Token estimate: ~4 chars/token (GPT-4 uses ~3.8, GPT-3 uses ~4).</li>
+        </ul>
+        <p class="muted">
+          You can override plan, model, and context size directly in the overlay panel. This page
+          reflects the default assumptions used before overrides.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

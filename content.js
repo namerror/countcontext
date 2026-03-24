@@ -397,6 +397,9 @@
           <button class="ccx-button" id="ccx-refresh">Recalculate</button>
           <button class="ccx-button secondary" id="ccx-minimize">Minimize</button>
         </div>
+        <div id="ccx-footer">
+          <button class="ccx-link" id="ccx-learn">Learn how it works</button>
+        </div>
       </div>
     `;
 
@@ -411,6 +414,15 @@
     root.querySelector("#ccx-refresh").addEventListener("click", () => {
       calculateEstimate();
       updateUI();
+    });
+
+    root.querySelector("#ccx-learn").addEventListener("click", () => {
+      if (chrome?.runtime?.sendMessage) {
+        chrome.runtime.sendMessage({ type: "ccx-open-learn" });
+        return;
+      }
+      const url = chrome?.runtime?.getURL ? chrome.runtime.getURL("learn.html") : "learn.html";
+      window.open(url, "_blank", "noopener,noreferrer");
     });
 
     const planSelect = root.querySelector("#ccx-plan-select");

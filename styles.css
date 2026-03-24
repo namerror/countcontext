@@ -130,6 +130,26 @@
   margin-top: 12px;
 }
 
+.ccx-link {
+  background: none;
+  border: none;
+  color: var(--ccx-muted);
+  font-size: 12px;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ccx-link:hover {
+  color: var(--ccx-fg);
+}
+
+#ccx-footer {
+  margin-top: 10px;
+  text-align: right;
+}
+
 .ccx-button {
   flex: 1;
   background: rgba(63, 179, 127, 0.15);
