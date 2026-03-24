@@ -1,33 +1,79 @@
 (() => {
   const DEFAULT_SETTINGS = {
-    modelOverride: "auto",
+    modelOverride: "gpt-5.3-instant",
+    planTier: "Plus",
     customContextSize: 8000,
+    modelContextOverrides: {},
     perAttachmentTokens: 200,
     overheadTokens: 500,
     virtualizationStrategy: "USER_GUIDED"
   };
 
-  const MODEL_CONTEXTS = {
-    "gpt-4o": 128000,
-    "gpt-4o-mini": 128000,
-    "gpt-4.1": 128000,
-    "gpt-4.1-mini": 128000,
-    "gpt-4": 8192,
-    "gpt-4-32k": 32768,
-    "gpt-3.5": 4096
-  };
-
-  const MODEL_OPTIONS = [
-    { id: "auto", label: "Auto-detect" },
-    { id: "gpt-4o", label: "GPT-4o" },
-    { id: "gpt-4o-mini", label: "GPT-4o mini" },
-    { id: "gpt-4.1", label: "GPT-4.1" },
-    { id: "gpt-4.1-mini", label: "GPT-4.1 mini" },
-    { id: "gpt-4", label: "GPT-4" },
-    { id: "gpt-4-32k", label: "GPT-4 32K" },
-    { id: "gpt-3.5", label: "GPT-3.5" },
-    { id: "custom", label: "Custom" }
+  const PLAN_OPTIONS = [
+    { id: "Free", label: "Free" },
+    { id: "Go", label: "Go" },
+    { id: "Plus", label: "Plus" },
+    { id: "Pro", label: "Pro" },
+    { id: "Business", label: "Business" },
+    { id: "Enterprise", label: "Enterprise" }
   ];
+
+  const MODEL_DEFS = [
+    {
+      id: "gpt-5.3-instant",
+      label: "GPT-5.3 Instant",
+      caps: {
+        Free: 16000,
+        Go: 32000,
+        Plus: 32000,
+        Pro: 128000,
+        Business: 32000,
+        Enterprise: 128000
+      }
+    },
+    {
+      id: "gpt-5.4-thinking",
+      label: "GPT-5.4 Thinking",
+      caps: {
+        Plus: 196000,
+        Pro: 196000,
+        Business: 196000,
+        Enterprise: 196000
+      }
+    },
+    {
+      id: "gpt-5.4-pro",
+      label: "GPT-5.4 Pro",
+      caps: {
+        Plus: 196000,
+        Pro: 196000,
+        Business: 196000,
+        Enterprise: 196000
+      }
+    },
+    {
+      id: "gpt-5.2-instant",
+      label: "GPT-5.2 Instant (Legacy)",
+      contextWindow: 400000
+    },
+    {
+      id: "gpt-5.2-thinking",
+      label: "GPT-5.2 Thinking (Legacy)",
+      contextWindow: 400000
+    },
+    {
+      id: "gpt-5-mini",
+      label: "GPT-5 mini",
+      contextWindow: 400000
+    },
+    {
+      id: "o3",
+      label: "o3",
+      contextWindow: 200000
+    }
+  ];
+
+  const LEGACY_MODEL_IDS = new Set(["gpt-5.2-instant", "gpt-5.2-thinking"]);
 
   const state = {
     settings: { ...DEFAULT_SETTINGS },
@@ -85,6 +131,13 @@
 
   function normalizeModelId(label) {
     const l = label.toLowerCase();
+    if (/\bo3\b/.test(l)) return "o3";
+    if (l.includes("gpt-5 mini") || l.includes("gpt-5-mini") || l.includes("5 mini")) return "gpt-5-mini";
+    if (l.includes("5.4") && l.includes("pro")) return "gpt-5.4-pro";
+    if (l.includes("5.4")) return "gpt-5.4-thinking";
+    if (l.includes("5.3") || (l.includes("instant") && l.includes("5"))) return "gpt-5.3-instant";
+    if (l.includes("5.2") && l.includes("instant")) return "gpt-5.2-instant";
+    if (l.includes("5.2") && (l.includes("thinking") || l.includes("pro"))) return "gpt-5.2-thinking";
     if (l.includes("4o")) return "gpt-4o";
     if (l.includes("4.1 mini") || l.includes("4.1-mini")) return "gpt-4.1-mini";
     if (l.includes("4.1")) return "gpt-4.1";
@@ -95,9 +148,33 @@
     return "unknown";
   }
 
+  function getModelDef(modelId) {
+    return MODEL_DEFS.find((model) => model.id === modelId) || null;
+  }
+
+  function getPlanCap(modelId, planTier) {
+    const model = getModelDef(modelId);
+    if (!model) return null;
+    if (model.caps && model.caps[planTier]) return model.caps[planTier];
+    if (model.contextWindow) return model.contextWindow;
+    return null;
+  }
+
+  function getOverrideTargetId() {
+    if (state.settings.modelOverride === "custom") return "custom";
+    if (state.settings.modelOverride === "auto") {
+      return state.modelId && state.modelId !== "unknown" ? state.modelId : null;
+    }
+    return state.settings.modelOverride;
+  }
+
   function getContextSize(modelId) {
     if (modelId === "custom") return state.settings.customContextSize || DEFAULT_SETTINGS.customContextSize;
-    if (MODEL_CONTEXTS[modelId]) return MODEL_CONTEXTS[modelId];
+    const overrides = state.settings.modelContextOverrides || {};
+    const override = overrides[modelId];
+    if (Number.isFinite(override) && override > 0) return override;
+    const planCap = getPlanCap(modelId, state.settings.planTier);
+    if (Number.isFinite(planCap) && planCap > 0) return planCap;
     return state.settings.customContextSize || DEFAULT_SETTINGS.customContextSize;
   }
 
@@ -249,11 +326,40 @@
   function updateModelSelect() {
     const select = state.ui.modelSelect;
     if (!select) return;
+    if (!PLAN_OPTIONS.some((opt) => opt.id === state.settings.planTier)) {
+      state.settings.planTier = DEFAULT_SETTINGS.planTier;
+      safeStorageSet(state.settings);
+    }
+    if (state.ui.planSelect) state.ui.planSelect.value = state.settings.planTier;
+    const nextOptions = buildModelOptions(state.settings.planTier);
+    select.innerHTML = nextOptions.map((opt) => `<option value="${opt.id}">${opt.label}</option>`).join("");
+    if (!nextOptions.some((opt) => opt.id === state.settings.modelOverride)) {
+      state.settings.modelOverride = DEFAULT_SETTINGS.modelOverride;
+      safeStorageSet(state.settings);
+    }
     select.value = state.settings.modelOverride;
 
-    const showCustom = state.settings.modelOverride === "custom";
-    state.ui.customContextRow.style.display = showCustom ? "flex" : "none";
-    state.ui.customContextInput.value = state.settings.customContextSize;
+    state.ui.customContextRow.style.display = "flex";
+    const targetId = getOverrideTargetId();
+    if (!targetId) {
+      state.ui.customContextInput.value = "";
+      state.ui.customContextInput.placeholder = "";
+      state.ui.customContextInput.disabled = true;
+      state.ui.customContextLabel.textContent = "Context cap (override)";
+    } else if (targetId === "custom") {
+      state.ui.customContextInput.disabled = false;
+      state.ui.customContextLabel.textContent = "Context size";
+      state.ui.customContextInput.value = state.settings.customContextSize;
+      state.ui.customContextInput.placeholder = "";
+    } else {
+      state.ui.customContextInput.disabled = false;
+      state.ui.customContextLabel.textContent = "Context cap (override)";
+      const overrides = state.settings.modelContextOverrides || {};
+      const override = overrides[targetId];
+      state.ui.customContextInput.value = Number.isFinite(override) ? override : "";
+      const planCap = getPlanCap(targetId, state.settings.planTier);
+      state.ui.customContextInput.placeholder = Number.isFinite(planCap) ? String(planCap) : "";
+    }
 
     state.ui.attachmentInput.value = state.settings.perAttachmentTokens;
   }
@@ -292,11 +398,15 @@
         <div class="ccx-section">
           <div class="ccx-tag">Overrides</div>
           <div class="ccx-control">
+            <label for="ccx-plan-select">Plan</label>
+            <select id="ccx-plan-select"></select>
+          </div>
+          <div class="ccx-control">
             <label for="ccx-model-select">Model</label>
             <select id="ccx-model-select"></select>
           </div>
-          <div class="ccx-control" id="ccx-custom-row" style="display:none;">
-            <label for="ccx-custom-context">Context size</label>
+          <div class="ccx-control" id="ccx-custom-row">
+            <label for="ccx-custom-context" id="ccx-custom-label">Context cap (override)</label>
             <input id="ccx-custom-context" type="number" min="1000" step="100" />
           </div>
           <div class="ccx-control">
@@ -326,8 +436,20 @@
       updateUI();
     });
 
+    const planSelect = root.querySelector("#ccx-plan-select");
+    planSelect.innerHTML = PLAN_OPTIONS.map((opt) => `<option value="${opt.id}">${opt.label}</option>`).join("");
+    planSelect.addEventListener("change", (event) => {
+      state.settings.planTier = event.target.value;
+      safeStorageSet(state.settings);
+      updateModelSelect();
+      calculateEstimate();
+      updateUI();
+    });
+
     const modelSelect = root.querySelector("#ccx-model-select");
-    modelSelect.innerHTML = MODEL_OPTIONS.map((opt) => `<option value="${opt.id}">${opt.label}</option>`).join("");
+    modelSelect.innerHTML = buildModelOptions(state.settings.planTier)
+      .map((opt) => `<option value="${opt.id}">${opt.label}</option>`)
+      .join("");
     modelSelect.addEventListener("change", (event) => {
       state.settings.modelOverride = event.target.value;
       safeStorageSet(state.settings);
@@ -337,9 +459,29 @@
 
     const customInput = root.querySelector("#ccx-custom-context");
     customInput.addEventListener("change", (event) => {
-      const value = Number(event.target.value);
+      const raw = event.target.value.trim();
+      const targetId = getOverrideTargetId();
+      if (!targetId) return;
+      if (!raw) {
+        if (targetId === "custom") return;
+        if (state.settings.modelContextOverrides && state.settings.modelContextOverrides[targetId]) {
+          delete state.settings.modelContextOverrides[targetId];
+          safeStorageSet(state.settings);
+          calculateEstimate();
+          updateUI();
+        }
+        return;
+      }
+      const value = Number(raw);
       if (Number.isFinite(value) && value > 0) {
-        state.settings.customContextSize = value;
+        if (targetId === "custom") {
+          state.settings.customContextSize = value;
+        } else {
+          state.settings.modelContextOverrides = {
+            ...(state.settings.modelContextOverrides || {}),
+            [targetId]: value
+          };
+        }
         safeStorageSet(state.settings);
         calculateEstimate();
         updateUI();
@@ -368,11 +510,38 @@
       modelLabel: root.querySelector("#ccx-model"),
       contextSize: root.querySelector("#ccx-context"),
       warning: root.querySelector("#ccx-warning"),
+      planSelect,
       modelSelect,
       customContextRow: root.querySelector("#ccx-custom-row"),
+      customContextLabel: root.querySelector("#ccx-custom-label"),
       customContextInput: customInput,
       attachmentInput
     };
+  }
+
+  function buildModelOptions(planTier) {
+    const allowedIds = new Set();
+    if (planTier === "Free" || planTier === "Go") {
+      allowedIds.add("gpt-5.3-instant");
+    } else if (planTier === "Plus") {
+      allowedIds.add("gpt-5.3-instant");
+      allowedIds.add("gpt-5.4-thinking");
+      allowedIds.add("gpt-5.4-pro");
+      LEGACY_MODEL_IDS.forEach((id) => allowedIds.add(id));
+    } else {
+      MODEL_DEFS.forEach((model) => allowedIds.add(model.id));
+    }
+
+    const allowedModels = MODEL_DEFS.filter((model) => allowedIds.has(model.id)).map((model) => ({
+      id: model.id,
+      label: model.label
+    }));
+
+    return [
+      { id: "auto", label: "Auto-detect" },
+      ...allowedModels,
+      { id: "custom", label: "Custom" }
+    ];
   }
 
   function observeDom() {
