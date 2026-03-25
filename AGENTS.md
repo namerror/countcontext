@@ -4,7 +4,14 @@ This repo uses structured devlogs to keep agent sessions transparent and easy to
 
 ## Required Devlog Per Session
 
-Every agent session must create a devlog entry.
+Every agent session must create a devlog entry **unless it's a quick internal discussion, short fix, or minor update**.
+
+You can skip devlogs for:
+- Quick internal discussions (e.g., "Discussed approach with team, decided to proceed with X, generated a report").
+- Short fixes (e.g., "Fixed typo in README, no impact on functionality").
+- Minor updates (e.g., "Updated comments for clarity, no code changes").
+
+You should also update the same devlog if you operated during *the same session* and made multiple edits. For example, if you made a code change and was instructed to make a follow-up edit within the same session, you can update the original devlog instead of creating a new one.
 
 - Location: `docs/devlogs/`
 - Filename format: `YYYY-MM-DD-<agent>-<title>.md`
