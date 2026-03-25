@@ -242,14 +242,14 @@
     if (ready) {
       state.ui.totalTokens.textContent = formatNumber(state.estimate.totalTokens);
       state.ui.chatTokens.textContent = formatNumber(state.estimate.chatTokens);
-      state.ui.attachmentTokens.textContent = formatNumber(state.estimate.attachmentTokens);
+      state.ui.attachmentTokens.textContent = "Not implemented";
       state.ui.overheadTokens.textContent = formatNumber(state.estimate.overheadTokens);
       state.ui.modelLabel.textContent = state.modelLabel || "Unknown";
       state.ui.contextSize.textContent = formatNumber(state.contextSize);
     } else {
       state.ui.totalTokens.textContent = "—";
       state.ui.chatTokens.textContent = "—";
-      state.ui.attachmentTokens.textContent = "—";
+      state.ui.attachmentTokens.textContent = "Not implemented";
       state.ui.overheadTokens.textContent = "—";
       state.ui.modelLabel.textContent = "Not selected";
       state.ui.contextSize.textContent = "—";
@@ -336,7 +336,7 @@
         </div>
         <div class="ccx-row"><span class="ccx-muted">Total tokens</span><strong id="ccx-total">0</strong></div>
         <div class="ccx-row"><span class="ccx-muted">Chat text</span><span id="ccx-chat">0</span></div>
-        <div class="ccx-row"><span class="ccx-muted">Attachments</span><span id="ccx-attach">0</span></div>
+        <div class="ccx-row"><span class="ccx-muted">Attachments</span><span id="ccx-attach">Not implemented</span></div>
         <div class="ccx-row"><span class="ccx-muted">Overhead</span><span id="ccx-overhead">0</span></div>
         <div class="ccx-row"><span class="ccx-muted">Model detected</span><span id="ccx-model">Unknown</span></div>
         <div class="ccx-row"><span class="ccx-muted">Context size</span><span id="ccx-context">0</span></div>
