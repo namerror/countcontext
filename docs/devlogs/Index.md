@@ -2,6 +2,7 @@
 
 Newest first.
 
+- 2026-03-29 codex split-precise-estimator - docs/devlogs/2026-03-29-codex-split-precise-estimator.md
 - 2026-03-25 codex set-attachment-text - docs/devlogs/2026-03-25-codex-set-attachment-text.md
 - 2026-03-24 codex estimation-methods - docs/devlogs/2026-03-24-codex-estimation-methods.md
 - 2026-03-23 codex brave-learn-open - docs/devlogs/2026-03-23-codex-brave-learn-open.md

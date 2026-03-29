@@ -14,6 +14,7 @@
         "config.js",
         "estimators/registry.js",
         "estimators/fast.js",
+        "estimators/precise.js",
         "estimators/method-b.js",
         "content.js"
       ],

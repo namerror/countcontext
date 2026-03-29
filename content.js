@@ -185,8 +185,14 @@
       tokenizer: window.__ccxTokenizer,
       settings: state.settings
     };
-    const result = estimator ? estimator.estimate(estimatorInput) : { chatTokens: 0 };
-    const chatTokens = Number.isFinite(result?.chatTokens) ? result.chatTokens : 0;
+    const result = estimator ? estimator.estimate(estimatorInput) : { chatTokens: null };
+    let chatTokens = Number.isFinite(result?.chatTokens) ? result.chatTokens : null;
+    if (chatTokens === null && estimator && estimator.id !== "fast") {
+      const fallback = getEstimator("fast");
+      const fallbackResult = fallback ? fallback.estimate(estimatorInput) : { chatTokens: 0 };
+      chatTokens = Number.isFinite(fallbackResult?.chatTokens) ? fallbackResult.chatTokens : 0;
+    }
+    if (chatTokens === null) chatTokens = 0;
 
     const overheadTokens = state.settings.overheadTokens;
     const totalTokens = chatTokens + overheadTokens;
@@ -271,6 +277,7 @@
     }));
     if (!options.length) {
       options.push({ id: "fast", label: "Fast estimation" });
+      options.push({ id: "precise", label: "Precise (tokenizer)" });
       options.push({ id: "methodB", label: "Method B (placeholder)" });
     }
     return options;
