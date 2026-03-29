@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Learn How It Works</title>
+    <title>How ChatGPT Context Counter Works</title>
     <link rel="stylesheet" href="learn.css" />
   </head>
   <body>
@@ -12,30 +12,51 @@
         <p class="eyebrow">ChatGPT Context Counter</p>
         <h1>How We Estimate Context Usage</h1>
         <p class="lede">
-          This extension estimates how much of your ChatGPT context window is being used by the
-          current conversation. The numbers are heuristic by default and can be customized in the
-          panel.
+          This extension estimates how much of your current ChatGPT conversation context is in use.
+          It is helpful for planning prompts, but it should be treated as an estimate rather than an
+          exact internal ChatGPT meter.
         </p>
       </header>
 
       <section class="card">
-        <h2>How We Estimate Tokens</h2>
+        <h2>What Works Today</h2>
         <ul>
-          <li>We parse visible conversation text and normalize whitespace.</li>
-          <li>Multiple estimation methods are available; Fast (default), Precise (tokenizer).</li>
-          <li>Fast Estimation: Tokens are estimated from character counts (4 chars per token by default).</li>
-          <li>Precise Estimation: Tokens are estimated using a bundled tokenizer (pure JS). On very large chats it may fall back to Fast.</li>
-          <li>Attachments: Currently not supported.</li>
-          <li>ChatGPT Projects: Estimating total project context is currently not supported.</li>
-          <li>System Overhead: A fixed number of tokens (500) are reserved for system messages, tools, etc.</li>
+          <li>We read and filter conversation text from the current ChatGPT page.</li>
+          <li>We estimate chat tokens and add a fixed overhead reserve.</li>
+          <li>We show total estimated tokens, percent used, and context size.</li>
+          <li>We offer two methods: Fast (heuristic) and Precise (tokenizer-based).</li>
+          <li>We warn when older history may not be fully loaded in the page.</li>
+          <li>We remember your selected plan, model, and estimation method locally in your browser.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>What Does Not Work Yet</h2>
+        <ul>
+          <li>Attachments are not implemented and are not counted.</li>
+          <li>Automatic model detection is not implemented yet.</li>
+          <li>ChatGPT Projects or project-wide context are not supported.</li>
+          <li>Some conversation history may not be counted until ChatGPT loads it into the page.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <h2>How To Use The Estimate</h2>
+        <ul>
+          <li>Open the panel from the bottom-right corner of ChatGPT.</li>
+          <li>Select your plan and model manually.</li>
+          <li>Pick Fast for speed or Precise for a closer estimate.</li>
+          <li>Click Recalculate after scrolling up or loading more history.</li>
+          <li>If the extension warns that history may be incomplete, treat the total as low.</li>
+          <li>On very large chats, Precise may fall back to Fast automatically.</li>
         </ul>
       </section>
 
       <section class="card">
         <h2>Default Context Assumptions</h2>
         <p class="muted">
-          These are the default caps used by the extension before any overrides. Some models use
-          plan-based caps; others have a single context window that applies to all plans.
+          These are the built-in defaults used by the extension for manual plan/model selection.
+          They are not a claim about exact real-time ChatGPT web limits in every account.
         </p>
         <div class="table-wrap">
           <table>
@@ -128,15 +149,32 @@
       </section>
 
       <section class="card">
-        <h2>Overhead Assumptions</h2>
+        <h2>What The Numbers Mean</h2>
         <ul>
-          <li>Base system/format overhead: 500 tokens.</li>
-          <li>Attachments: Not implemented.</li>
-          <li>Token estimate: fast method: ~4 chars/token; precise method uses a tokenizer when available.</li>
+          <li>Chat text: estimated from conversation text in the page.</li>
+          <li>Overhead: fixed 500-token reserve for system or formatting costs.</li>
+          <li>Attachments: shown as not implemented and excluded from totals.</li>
+          <li>Fast: simple character-based estimate.</li>
+          <li>Precise: bundled tokenizer estimate.</li>
         </ul>
         <p class="muted">
-          You can override plan, model, and context size directly in the overlay panel. This page
-          reflects the default assumptions used before overrides.
+          The estimate is informational only. A fully loaded conversation and the right manual plan
+          and model selection will usually give the best result.
+        </p>
+      </section>
+
+      <section class="card">
+        <h2>Privacy Summary</h2>
+        <ul>
+          <li>The extension reads the current ChatGPT page so it can estimate token usage.</li>
+          <li>Processing happens locally in your browser.</li>
+          <li>Your settings are stored locally with Chrome extension storage.</li>
+          <li>The extension does not send your conversation contents to an external server.</li>
+        </ul>
+        <p class="muted">
+          For the full policy and support path, see <code>PRIVACY.md</code> in the project repo and
+          GitHub issues at <code>github.com/namerror/countcontext/issues</code>.
+          Contributing is welcome!
         </p>
       </section>
     </main>

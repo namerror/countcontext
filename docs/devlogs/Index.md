@@ -2,6 +2,7 @@
 
 Newest first.
 
+- 2026-03-29 codex public-docs-sync - docs/devlogs/2026-03-29-codex-public-docs-sync.md
 - 2026-03-29 codex implement-precise-tokenizer - docs/devlogs/2026-03-29-codex-implement-precise-tokenizer.md
 - 2026-03-29 codex split-precise-estimator - docs/devlogs/2026-03-29-codex-split-precise-estimator.md
 - 2026-03-25 codex set-attachment-text - docs/devlogs/2026-03-25-codex-set-attachment-text.md
