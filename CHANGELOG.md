@@ -2,7 +2,12 @@
 
 All notable public-facing changes to this project will be documented in this file.
 
-## [0.9.1] - 2026-04-01
+## [0.9.2] - 2026-04-01
+
+### Changed
+- Updated extension icon packs.
+
+## [0.9.1] - 2026-04-01 - Superceded by 0.9.2 due to a minor issue with the icon.
 
 ### Added
 
