@@ -2,6 +2,11 @@
 
 All notable public-facing changes to this project will be documented in this file.
 
+## [0.9.3] - 2026-04-02
+
+### Changed
+- Tightened host match patterns to only run on `https://chatgpt.com/*`.
+
 ## [0.9.2] - 2026-04-01
 
 ### Changed
