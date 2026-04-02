@@ -28,6 +28,18 @@ jobs:
           VERSION="${TAG#v}"
           echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
 
+      - name: Derive prerelease flag
+        id: flags
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          MAJOR="${VERSION%%.*}"
+          if [[ "${MAJOR}" == "0" ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Validate versions match tag
         run: node scripts/validate.mjs --expect-version "${{ steps.version.outputs.version }}"
 
@@ -37,5 +49,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          prerelease: ${{ steps.flags.outputs.prerelease }}
           files: dist/ChatGPT-Context-Counter-${{ steps.version.outputs.version }}.zip
-

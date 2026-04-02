@@ -2,6 +2,17 @@
 
 All notable public-facing changes to this project will be documented in this file.
 
+## [0.9.1] - 2026-04-01
+
+### Added
+
+- Added an extension icon.
+
+### Changed
+
+- Refreshed the overlay UI styling to a light theme.
+- Updated `learn.html` styling to match the new theme.
+
 ## [0.9.0] - 2026-03-29
 
 ### Added

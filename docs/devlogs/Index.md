@@ -2,6 +2,7 @@
 
 Newest first.
 
+- 2026-04-01 codex prepare-beta-release - docs/devlogs/2026-04-01-codex-prepare-beta-release.md
 - 2026-04-01 codex light-icon-theme - docs/devlogs/2026-04-01-codex-light-icon-theme.md
 - 2026-04-01 codex gpt-tone-refresh - docs/devlogs/2026-04-01-codex-gpt-tone-refresh.md
 - 2026-03-31 codex ci-cd-pipeline - docs/devlogs/2026-03-31-codex-ci-cd-pipeline.md
