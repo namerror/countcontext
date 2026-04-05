@@ -19,6 +19,8 @@
     ui: {},
     modelLabel: "",
     modelId: "",
+    pageSupport: "supported_regular_chat",
+    pageWarning: "",
     contextSize: DEFAULT_SETTINGS.customContextSize,
     estimate: {
       chatTokens: 0,
@@ -32,7 +34,9 @@
   const STORAGE_KEY = "ccx_settings";
   const DEBOUNCE_MS = 500;
   const PRECISE_MAX_CHARS = 250000;
+  const URL_POLL_MS = 1000;
   let recalcTimer = null;
+  let lastKnownUrl = window.location.href;
 
   function safeStorageGet() {
     return new Promise((resolve) => {
@@ -158,7 +162,60 @@
     return Boolean(state.settings.planTier && state.settings.modelOverride);
   }
 
+  function isCanonicalChatPath(pathname) {
+    return /^\/c\/[^/]+\/?$/.test(pathname);
+  }
+
+  function isNewChatPath(pathname) {
+    return pathname === "/";
+  }
+
+  function hasRegularChatSignals() {
+    if (findMessageNodes().length > 0) return true;
+    if (document.querySelector("#prompt-textarea")) return true;
+    if (document.querySelector("main form textarea, main form [contenteditable='true']")) return true;
+    return false;
+  }
+
+  function detectPageSupport() {
+    const { pathname } = window.location;
+    const pathLooksSupported = isCanonicalChatPath(pathname) || isNewChatPath(pathname);
+
+    if (!pathLooksSupported) {
+      return {
+        status: "unsupported_project_or_nonchat",
+        warning: "Unsupported page. Context Counter works on regular ChatGPT chats only (including new chat)."
+      };
+    }
+
+    if (!hasRegularChatSignals()) {
+      return {
+        status: "unsupported_unknown_layout",
+        warning: "Unsupported chat layout. Open a regular chat tab to estimate context."
+      };
+    }
+
+    return { status: "supported_regular_chat", warning: "" };
+  }
+
+  function applyUnsupportedState(pageSupport, warning) {
+    state.pageSupport = pageSupport;
+    state.pageWarning = warning;
+    state.modelLabel = "Unsupported";
+    state.modelId = "";
+    state.contextSize = 0;
+    state.estimate = {
+      chatTokens: 0,
+      overheadTokens: 0,
+      totalTokens: 0
+    };
+    state.isIncomplete = false;
+    state.preciseSkipped = false;
+  }
+
   function calculateEstimate() {
+    state.pageSupport = "supported_regular_chat";
+    state.pageWarning = "";
     if (!isReadyToEstimate()) {
       state.modelLabel = "Not selected";
       state.modelId = "";
@@ -213,6 +270,17 @@
     state.isIncomplete = detectIncompleteHistory();
   }
 
+  function refreshFromPageState() {
+    const support = detectPageSupport();
+    if (support.status !== "supported_regular_chat") {
+      applyUnsupportedState(support.status, support.warning);
+      updateUI();
+      return;
+    }
+    calculateEstimate();
+    updateUI();
+  }
+
   function formatNumber(value) {
     return new Intl.NumberFormat().format(value);
   }
@@ -224,6 +292,22 @@
 
   function updateUI() {
     if (!state.ui.root) return;
+
+    const isSupported = state.pageSupport === "supported_regular_chat";
+    if (!isSupported) {
+      state.ui.percent.textContent = "Unsupported";
+      state.ui.barFill.style.width = "0%";
+      state.ui.totalTokens.textContent = "Unsupported";
+      state.ui.chatTokens.textContent = "Unsupported";
+      state.ui.overheadTokens.textContent = "Unsupported";
+      state.ui.modelLabel.textContent = "Unsupported";
+      state.ui.contextSize.textContent = "Unsupported";
+      state.ui.warning.style.display = "block";
+      state.ui.warning.innerHTML = `<div>${state.pageWarning}</div>`;
+      updateModelSelect();
+      updateMethodSelect();
+      return;
+    }
 
     const percent = percentUsed();
     state.ui.percent.textContent = `${percent}% used`;
@@ -313,8 +397,7 @@
   function scheduleRecalc() {
     if (recalcTimer) clearTimeout(recalcTimer);
     recalcTimer = setTimeout(() => {
-      calculateEstimate();
-      updateUI();
+      refreshFromPageState();
     }, DEBOUNCE_MS);
   }
 
@@ -375,8 +458,7 @@
     root.querySelector("#ccx-minimize").addEventListener("click", () => panel.classList.remove("ccx-open"));
 
     root.querySelector("#ccx-refresh").addEventListener("click", () => {
-      calculateEstimate();
-      updateUI();
+      refreshFromPageState();
     });
 
     root.querySelector("#ccx-learn").addEventListener("click", () => {
@@ -397,8 +479,7 @@
       state.settings.planTier = event.target.value;
       safeStorageSet(state.settings);
       updateModelSelect();
-      calculateEstimate();
-      updateUI();
+      refreshFromPageState();
     });
 
     const modelSelect = root.querySelector("#ccx-model-select");
@@ -408,8 +489,7 @@
     modelSelect.addEventListener("change", (event) => {
       state.settings.modelOverride = event.target.value;
       safeStorageSet(state.settings);
-      calculateEstimate();
-      updateUI();
+      refreshFromPageState();
     });
 
     const methodSelect = root.querySelector("#ccx-method-select");
@@ -419,8 +499,7 @@
     methodSelect.addEventListener("change", (event) => {
       state.settings.estimationMethod = event.target.value;
       safeStorageSet(state.settings);
-      calculateEstimate();
-      updateUI();
+      refreshFromPageState();
     });
 
     state.ui = {
@@ -469,12 +548,42 @@
     observer.observe(container, { childList: true, subtree: true, characterData: true });
   }
 
+  function observeNavigation() {
+    const emitLocationChange = () => {
+      window.dispatchEvent(new Event("ccx-locationchange"));
+    };
+
+    const wrapHistoryMethod = (method) => {
+      const original = history[method];
+      if (typeof original !== "function") return;
+      history[method] = function wrappedHistoryMethod(...args) {
+        const result = original.apply(this, args);
+        emitLocationChange();
+        return result;
+      };
+    };
+
+    wrapHistoryMethod("pushState");
+    wrapHistoryMethod("replaceState");
+
+    window.addEventListener("popstate", emitLocationChange);
+    window.addEventListener("hashchange", emitLocationChange);
+    window.addEventListener("ccx-locationchange", scheduleRecalc);
+
+    window.setInterval(() => {
+      const currentUrl = window.location.href;
+      if (currentUrl === lastKnownUrl) return;
+      lastKnownUrl = currentUrl;
+      scheduleRecalc();
+    }, URL_POLL_MS);
+  }
+
   async function init() {
     state.settings = await safeStorageGet();
     buildOverlay();
-    calculateEstimate();
-    updateUI();
+    refreshFromPageState();
     observeDom();
+    observeNavigation();
   }
 
   if (document.readyState === "loading") {

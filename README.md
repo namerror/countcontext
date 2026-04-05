@@ -12,6 +12,7 @@ This project is currently preparing for a public beta release. The extension is 
   - `Fast`: character-based heuristic
   - `Precise`: bundled tokenizer-based estimate
 - Lets you manually select your ChatGPT plan and model.
+- Auto-refreshes estimates when ChatGPT page/tab navigation changes within the app.
 - Warns when the visible history may be incomplete.
 - Stores your selected settings locally in the browser.
 
@@ -19,7 +20,8 @@ This project is currently preparing for a public beta release. The extension is 
 
 - Attachments are **not implemented yet** and are not included in totals.
 - Automatic model detection is **not implemented yet**; model selection is manual.
-- ChatGPT Projects / project-wide context are **not supported**.
+- Only regular chat pages are supported (`/` new chat and `/c/<conversation-id>`).
+- ChatGPT Projects and other non-regular layouts are **not supported** and show `Unsupported` in the overlay.
 - Estimates only use content currently present in the DOM, so unloaded or virtualized history can make totals low.
 - Very large chats can cause `Precise` estimation to fall back to `Fast`.
 - The extension is informational only and should not be treated as an exact tokenizer for ChatGPT web internals.
@@ -48,7 +50,8 @@ Any Chromium-based browser that supports Manifest V3 extensions should work, but
 3. Click it to expand the panel.
 4. Select your plan and model manually.
 5. Choose `Fast` or `Precise` estimation.
-6. Click `Recalculate` after scrolling up or loading more history.
+6. Estimates auto-refresh as you navigate between supported chat pages.
+7. Use `Recalculate` as an optional manual refresh after loading more history.
 
 ## How To Read The Estimate
 
