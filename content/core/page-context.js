@@ -1,9 +1,30 @@
 (() => {
   const content = window.__ccxContent;
   if (!content) return;
+  const CCX_USAGE_SELECTOR = ".ccx-message-usage, [data-ccx-message-usage='true']";
 
   function normalizeText(text) {
-    return text.replace(/\s+/g, " ").trim();
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function readNodeTextWithoutUsage(node) {
+    const usageNodes = Array.from(node.querySelectorAll(CCX_USAGE_SELECTOR));
+    if (!usageNodes.length) {
+      return normalizeText(node.innerText || "");
+    }
+
+    const previousDisplays = usageNodes.map((usageNode) => usageNode.style.display);
+    for (const usageNode of usageNodes) {
+      usageNode.style.display = "none";
+    }
+
+    try {
+      return normalizeText(node.innerText || "");
+    } finally {
+      usageNodes.forEach((usageNode, index) => {
+        usageNode.style.display = previousDisplays[index];
+      });
+    }
   }
 
   function findMessageNodes() {
@@ -17,7 +38,7 @@
 
     for (const node of findMessageNodes()) {
       const role = node.getAttribute("data-message-author-role") || "unknown";
-      const text = normalizeText(node.innerText || "");
+      const text = readNodeTextWithoutUsage(node);
       if (!text) continue;
       messages.push({ role, text });
     }

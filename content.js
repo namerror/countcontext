@@ -50,6 +50,7 @@
   const DRAG_THRESHOLD_PX = 6;
   const PRECISE_MAX_CHARS = 250000;
   const URL_POLL_MS = 1000;
+  const CCX_USAGE_SELECTOR = ".ccx-message-usage, [data-ccx-message-usage='true']";
 
   const state = {
     settings: { ...DEFAULT_SETTINGS },
@@ -276,8 +277,50 @@
     return `${value.toFixed(precision)}%`;
   }
 
+  function normalizeMessageRole(role) {
+    const normalized = String(role || "").toLowerCase();
+    if (normalized === "user" || normalized === "assistant") {
+      return normalized;
+    }
+    return "";
+  }
+
+  function resolveMessageRole(messageUsage, node, messageIndex) {
+    const usageRole = normalizeMessageRole(messageUsage?.role);
+    if (usageRole) return usageRole;
+
+    const nodeRole = normalizeMessageRole(node?.getAttribute("data-message-author-role"));
+    if (nodeRole) return nodeRole;
+
+    return messageIndex % 2 === 0 ? "user" : "assistant";
+  }
+
   function normalizeMessageText(text) {
     return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function withUsageBadgesHidden(node, readText) {
+    const badges = Array.from(node.querySelectorAll(CCX_USAGE_SELECTOR));
+    if (!badges.length) {
+      return readText();
+    }
+
+    const previousDisplays = badges.map((badge) => badge.style.display);
+    for (const badge of badges) {
+      badge.style.display = "none";
+    }
+
+    try {
+      return readText();
+    } finally {
+      badges.forEach((badge, index) => {
+        badge.style.display = previousDisplays[index];
+      });
+    }
+  }
+
+  function getRenderableMessageText(node) {
+    return normalizeMessageText(withUsageBadgesHidden(node, () => node.innerText || ""));
   }
 
   function findMessageNodes() {
@@ -287,23 +330,22 @@
   }
 
   function findRenderableMessageNodes() {
-    return findMessageNodes().filter((node) => normalizeMessageText(node.innerText).length > 0);
+    return findMessageNodes().filter((node) => getRenderableMessageText(node).length > 0);
   }
 
   function clearPerMessageUsageBadges() {
     for (const node of findMessageNodes()) {
-      const badge = node.querySelector(".ccx-message-usage");
-      if (badge) badge.remove();
-      node.classList.remove("ccx-message-usage-host");
+      for (const badge of Array.from(node.querySelectorAll(".ccx-message-usage"))) {
+        badge.remove();
+      }
     }
   }
 
   function renderPerMessageUsageBadges() {
-    clearPerMessageUsageBadges();
-
     const isSupported = state.pageSupport === "supported_regular_chat";
     const isReady = Boolean(state.settings.planTier && state.settings.modelOverride);
     if (!state.settings.showPerMessageUsage || !isSupported || !isReady) {
+      clearPerMessageUsageBadges();
       return;
     }
 
@@ -322,20 +364,24 @@
       if (!badge) {
         badge = document.createElement("span");
         badge.className = "ccx-message-usage";
+        badge.dataset.ccxMessageUsage = "true";
         node.appendChild(badge);
       }
       if (badge.textContent !== nextText) {
         badge.textContent = nextText;
       }
-      node.classList.add("ccx-message-usage-host");
+
+      const role = resolveMessageRole(messageUsage, node, messageIndex);
+      badge.classList.remove("ccx-message-usage-user", "ccx-message-usage-assistant");
+      badge.classList.add(role === "user" ? "ccx-message-usage-user" : "ccx-message-usage-assistant");
       activeNodes.add(node);
     }
 
     for (const node of findMessageNodes()) {
       if (activeNodes.has(node)) continue;
-      const badge = node.querySelector(".ccx-message-usage");
-      if (badge) badge.remove();
-      node.classList.remove("ccx-message-usage-host");
+      for (const badge of Array.from(node.querySelectorAll(".ccx-message-usage"))) {
+        badge.remove();
+      }
     }
   }
 

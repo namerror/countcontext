@@ -184,8 +184,12 @@
               tokenCache.set(messageText, tokens);
             }
 
-          const contextPercent = contextSize > 0 ? (tokens / contextSize) * 100 : 0;
-          return { tokens, contextPercent };
+            const contextPercent = contextSize > 0 ? (tokens / contextSize) * 100 : 0;
+            return {
+              tokens,
+              contextPercent,
+              role: message.role || "unknown"
+            };
           });
         })()
       : [];

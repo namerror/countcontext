@@ -129,7 +129,7 @@ body.ccx-no-select {
 }
 
 .ccx-control select,
-.ccx-control input {
+.ccx-control input:not([type="checkbox"]) {
   background: #ffffff;
   border: 1px solid rgba(31, 41, 51, 0.12);
   color: var(--ccx-fg);
@@ -139,15 +139,30 @@ body.ccx-no-select {
   width: 140px;
 }
 
-.ccx-control input[type="checkbox"] {
-  width: auto;
+#ccx-root .ccx-control input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: checkbox;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  accent-color: #2e9d6b;
+  flex: 0 0 auto;
 }
 
 .ccx-control select:focus,
-.ccx-control input:focus {
+.ccx-control input:not([type="checkbox"]):focus {
   outline: 2px solid rgba(87, 184, 123, 0.24);
   outline-offset: 1px;
   border-color: rgba(87, 184, 123, 0.48);
+}
+
+#ccx-root .ccx-control input[type="checkbox"]:focus-visible {
+  outline: 2px solid rgba(87, 184, 123, 0.24);
+  outline-offset: 2px;
 }
 
 #ccx-actions {
@@ -218,23 +233,29 @@ body.ccx-no-select {
   color: var(--ccx-muted);
 }
 
-.ccx-message-usage-host {
-  position: relative;
-}
-
 .ccx-message-usage {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  background: rgba(31, 41, 51, 0.78);
-  color: #ffffff;
+  display: block;
+  width: fit-content;
+  margin: 6px 0 0 auto;
   border-radius: 10px;
-  padding: 1px 6px;
-  font-size: 10px;
-  line-height: 1.6;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.5;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 1;
+}
+
+.ccx-message-usage-user {
+  background: rgba(15, 23, 42, 0.88);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.ccx-message-usage-assistant {
+  background: rgba(226, 232, 240, 0.94);
+  color: #0f172a;
+  border: 1px solid rgba(148, 163, 184, 0.44);
 }
 
 @media (max-width: 480px) {
