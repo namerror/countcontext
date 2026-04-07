@@ -3,7 +3,7 @@
   const DEFAULT_SETTINGS = config.DEFAULT_SETTINGS || {
     modelOverride: "",
     planTier: "",
-    showPerMessageUsage: false,
+    showPerMessageUsage: true,
     customContextSize: 8000,
     modelContextOverrides: {},
     overlayPosition: {
@@ -317,7 +317,7 @@
       const messageUsage = usage[messageIndex];
       if (!node || !messageUsage || !Number.isFinite(messageUsage.tokens)) continue;
 
-      const nextText = `${formatNumber(messageUsage.tokens)} · ${formatPercent(messageUsage.contextPercent || 0)}`;
+      const nextText = `${formatNumber(messageUsage.tokens)} tokens, ${formatPercent(messageUsage.contextPercent || 0)}`;
       let badge = node.querySelector(".ccx-message-usage");
       if (!badge) {
         badge = document.createElement("span");

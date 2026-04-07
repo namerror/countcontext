@@ -4,7 +4,7 @@
   const DEFAULT_SETTINGS = {
     modelOverride: "",
     planTier: "",
-    showPerMessageUsage: false,
+    showPerMessageUsage: true,
     customContextSize: 8000,
     modelContextOverrides: {},
     overlayPosition: {
