@@ -2,6 +2,7 @@
 
 Newest first.
 
+- 2026-04-07 codex per-message-token-usage - docs/devlogs/2026-04-07-codex-per-message-token-usage.md
 - 2026-04-05 codex readme-structure - docs/devlogs/2026-04-05-codex-readme-structure.md
 - 2026-04-05 codex overlay-anchor-position - docs/devlogs/2026-04-05-codex-overlay-anchor-position.md
 - 2026-04-05 codex content-modules - docs/devlogs/2026-04-05-codex-content-modules.md
