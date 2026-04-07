@@ -3,6 +3,7 @@
   const DEFAULT_SETTINGS = config.DEFAULT_SETTINGS || {
     modelOverride: "",
     planTier: "",
+    showPerMessageUsage: true,
     customContextSize: 8000,
     modelContextOverrides: {},
     overlayPosition: {
@@ -64,6 +65,7 @@
       overheadTokens: DEFAULT_SETTINGS.overheadTokens,
       totalTokens: 0
     },
+    perMessageUsage: [],
     isIncomplete: false,
     preciseSkipped: false
   };
@@ -193,6 +195,7 @@
 
   function sanitizeSettings() {
     state.settings.overlayPosition = normalizeOverlayPosition(state.settings.overlayPosition);
+    state.settings.showPerMessageUsage = Boolean(state.settings.showPerMessageUsage);
 
     if (!PLAN_OPTIONS.some((option) => option.id === state.settings.planTier)) {
       state.settings.planTier = "";
@@ -220,6 +223,7 @@
       overheadTokens: 0,
       totalTokens: 0
     };
+    state.perMessageUsage = [];
     state.isIncomplete = false;
     state.preciseSkipped = false;
   }
@@ -244,6 +248,7 @@
     state.modelId = result.modelId;
     state.contextSize = result.contextSize;
     state.estimate = result.estimate;
+    state.perMessageUsage = result.perMessageUsage || [];
     state.isIncomplete = pageContext.isIncomplete;
     state.preciseSkipped = result.preciseSkipped;
   }
@@ -264,6 +269,74 @@
 
   function formatNumber(value) {
     return new Intl.NumberFormat().format(value);
+  }
+
+  function formatPercent(value) {
+    const precision = value >= 1 ? 1 : 2;
+    return `${value.toFixed(precision)}%`;
+  }
+
+  function normalizeMessageText(text) {
+    return String(text || "").replace(/\s+/g, " ").trim();
+  }
+
+  function findMessageNodes() {
+    const nodes = Array.from(document.querySelectorAll("[data-message-author-role]"));
+    if (nodes.length) return nodes;
+    return Array.from(document.querySelectorAll("[data-testid='conversation-turn']"));
+  }
+
+  function findRenderableMessageNodes() {
+    return findMessageNodes().filter((node) => normalizeMessageText(node.innerText).length > 0);
+  }
+
+  function clearPerMessageUsageBadges() {
+    for (const node of findMessageNodes()) {
+      const badge = node.querySelector(".ccx-message-usage");
+      if (badge) badge.remove();
+      node.classList.remove("ccx-message-usage-host");
+    }
+  }
+
+  function renderPerMessageUsageBadges() {
+    clearPerMessageUsageBadges();
+
+    const isSupported = state.pageSupport === "supported_regular_chat";
+    const isReady = Boolean(state.settings.planTier && state.settings.modelOverride);
+    if (!state.settings.showPerMessageUsage || !isSupported || !isReady) {
+      return;
+    }
+
+    const messageNodes = findRenderableMessageNodes();
+    const usage = state.perMessageUsage || [];
+    const count = Math.min(messageNodes.length, usage.length);
+    const activeNodes = new Set();
+
+    for (let messageIndex = 0; messageIndex < count; messageIndex += 1) {
+      const node = messageNodes[messageIndex];
+      const messageUsage = usage[messageIndex];
+      if (!node || !messageUsage || !Number.isFinite(messageUsage.tokens)) continue;
+
+      const nextText = `${formatNumber(messageUsage.tokens)} tokens, ${formatPercent(messageUsage.contextPercent || 0)}`;
+      let badge = node.querySelector(".ccx-message-usage");
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "ccx-message-usage";
+        node.appendChild(badge);
+      }
+      if (badge.textContent !== nextText) {
+        badge.textContent = nextText;
+      }
+      node.classList.add("ccx-message-usage-host");
+      activeNodes.add(node);
+    }
+
+    for (const node of findMessageNodes()) {
+      if (activeNodes.has(node)) continue;
+      const badge = node.querySelector(".ccx-message-usage");
+      if (badge) badge.remove();
+      node.classList.remove("ccx-message-usage-host");
+    }
   }
 
   function percentUsed() {
@@ -324,13 +397,15 @@
       selections: {
         planTier: state.settings.planTier,
         modelOverride: state.settings.modelOverride,
-        estimationMethod: state.settings.estimationMethod
+        estimationMethod: state.settings.estimationMethod,
+        showPerMessageUsage: state.settings.showPerMessageUsage
       }
     };
   }
 
   function render() {
     state.ui?.render(buildViewModel());
+    renderPerMessageUsageBadges();
   }
 
   function handleLearn() {
@@ -371,6 +446,12 @@
     refreshFromPageState();
   }
 
+  function handlePerMessageUsageChange(enabled) {
+    state.settings.showPerMessageUsage = Boolean(enabled);
+    persistSettings();
+    refreshFromPageState();
+  }
+
   async function init() {
     state.settings = await safeStorageGet();
     sanitizeSettings();
@@ -383,7 +464,8 @@
       onLearn: handleLearn,
       onPlanChange: handlePlanChange,
       onModelChange: handleModelChange,
-      onMethodChange: handleMethodChange
+      onMethodChange: handleMethodChange,
+      onPerMessageUsageChange: handlePerMessageUsageChange
     });
 
     state.dragController = attachOverlayDrag({

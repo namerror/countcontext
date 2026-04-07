@@ -38,7 +38,8 @@
     onLearn,
     onPlanChange,
     onModelChange,
-    onMethodChange
+    onMethodChange,
+    onPerMessageUsageChange
   }) {
     const existingRoot = document.getElementById("ccx-root");
     if (existingRoot) {
@@ -78,6 +79,10 @@
             <label for="ccx-method-select">Estimation</label>
             <select id="ccx-method-select"></select>
           </div>
+          <div class="ccx-control">
+            <label for="ccx-message-usage-toggle">Per-message usage</label>
+            <input type="checkbox" id="ccx-message-usage-toggle" />
+          </div>
         </div>
 
         <div id="ccx-actions">
@@ -107,6 +112,7 @@
       planSelect: root.querySelector("#ccx-plan-select"),
       modelSelect: root.querySelector("#ccx-model-select"),
       methodSelect: root.querySelector("#ccx-method-select"),
+      messageUsageToggle: root.querySelector("#ccx-message-usage-toggle"),
       refreshButton: root.querySelector("#ccx-refresh"),
       minimizeButton: root.querySelector("#ccx-minimize"),
       learnButton: root.querySelector("#ccx-learn")
@@ -146,6 +152,10 @@
       onMethodChange?.(event.target.value);
     });
 
+    refs.messageUsageToggle.addEventListener("change", (event) => {
+      onPerMessageUsageChange?.(event.target.checked);
+    });
+
     const render = (viewModel) => {
       const nextPlanOptions = [
         { id: "", label: "Select plan", disabled: true },
@@ -166,6 +176,7 @@
       setSelectOptions(refs.planSelect, nextPlanOptions, viewModel.selections.planTier);
       setSelectOptions(refs.modelSelect, nextModelOptions, viewModel.selections.modelOverride);
       setSelectOptions(refs.methodSelect, nextMethodOptions, viewModel.selections.estimationMethod);
+      refs.messageUsageToggle.checked = Boolean(viewModel.selections.showPerMessageUsage);
     };
 
     return { refs, render };

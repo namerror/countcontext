@@ -139,6 +139,10 @@ body.ccx-no-select {
   width: 140px;
 }
 
+.ccx-control input[type="checkbox"] {
+  width: auto;
+}
+
 .ccx-control select:focus,
 .ccx-control input:focus {
   outline: 2px solid rgba(87, 184, 123, 0.24);
@@ -212,6 +216,25 @@ body.ccx-no-select {
 .ccx-tag {
   font-size: 11px;
   color: var(--ccx-muted);
+}
+
+.ccx-message-usage-host {
+  position: relative;
+}
+
+.ccx-message-usage {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  background: rgba(31, 41, 51, 0.78);
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 10px;
+  line-height: 1.6;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 1;
 }
 
 @media (max-width: 480px) {

@@ -8,6 +8,7 @@ This project is currently preparing for a public beta release. The extension is 
 
 - Estimates token usage from the conversation text loaded in the page.
 - Shows total estimated tokens, chat text tokens, overhead tokens, and percent used.
+- Optional per-message token usage badges (tokens and context-window percent) in chat history.
 - Supports two estimation methods:
   - `Fast`: character-based heuristic
   - `Precise`: bundled tokenizer-based estimate
@@ -52,6 +53,7 @@ Any Chromium-based browser that supports Manifest V3 extensions should work, but
 5. Choose `Fast` or `Precise` estimation.
 6. Estimates auto-refresh as you navigate between supported chat pages.
 7. Use `Recalculate` as an optional manual refresh after loading more history.
+8. Enable `Per-message usage` in the panel to show small token/percent badges next to each message.
 
 ## How To Read The Estimate
 
