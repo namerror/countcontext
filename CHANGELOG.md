@@ -2,6 +2,14 @@
 
 All notable public-facing changes to this project will be documented in this file.
 
+## [0.9.4] - 2026-04-07
+
+### Added
+- The extension now displays "unsupported" on unsupported pages (e.g., chats in ChatGPT projects) instead of showing a false estimate.
+- Added auto-refresh when navigating between conversations.
+- Added dragging support for the overlay. Now users can click and drag the overlay to reposition it on the screen.
+- Added per-message token display in the overlay. Users can now see the token count and context usage for each individual message in the conversation history, providing more granular insight into token usage.
+
 ## [0.9.3] - 2026-04-02
 
 ### Changed
