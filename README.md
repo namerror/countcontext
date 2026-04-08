@@ -110,7 +110,7 @@ Main source JS relationships:
 - `content/core/runtime-observers.js` provides the debounce, DOM observation, and SPA navigation hooks that trigger refreshes.
 - `content/ui/overlay-view.js` owns overlay DOM creation, rendering, and UI event wiring.
 - `content/ui/overlay-drag.js` owns draggable positioning and persistence callbacks for the overlay shell.
-- `estimators/fast.js` and `estimators/precise.js` register the shipped estimators, while `estimators/method-b.js` is a placeholder/example registry entry.
+- `estimators/fast.js` and `estimators/precise.js` register the shipped estimators.
 
 ```mermaid
 flowchart TD
@@ -118,7 +118,7 @@ flowchart TD
   config["config.js\nwindow.__ccxConfig"]
   namespace["content/namespace.js\nwindow.__ccxContent"]
   registry["estimators/registry.js\nwindow.__ccxEstimatorRegistry"]
-  estimators["estimators/fast.js\nestimators/precise.js\nestimators/method-b.js"]
+  estimators["estimators/fast.js\nestimators/precise.js"]
   tokenizer["tokenizers/ccx-tokenizer.js\nwindow.__ccxTokenizer"]
   vendor["vendor/gpt-tokenizer/*"]
   core["content/core/*"]

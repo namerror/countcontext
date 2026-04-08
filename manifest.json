@@ -19,7 +19,6 @@
         "estimators/registry.js",
         "estimators/fast.js",
         "estimators/precise.js",
-        "estimators/method-b.js",
         "content/ui/overlay-drag.js",
         "content/ui/overlay-view.js",
         "content/core/page-context.js",
